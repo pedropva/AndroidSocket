@@ -1,48 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
 android:layout_width="match_parent"
 android:layout_height="match_parent"
 android:orientation="vertical" >
 
-<TextView
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_gravity="center_horizontal"
-    android:layout_marginTop="20dp"
-    android:layout_marginBottom="20dp"
-    android:autoLink="web"
-    android:text="http://androidSRC.net/"
-    android:textStyle="bold" />
-
-<EditText
-    android:id="@+id/addressEditText"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="Server ip address" />
-
-<EditText
-    android:id="@+id/portEditText"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:hint="Server port number" />
-
-<Button
-    android:id="@+id/connectButton"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginTop="20dp"
-    android:text="Connect..." />
-
-<Button
-    android:id="@+id/clearButton"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:text="Clear" />
+    <Button
+        android:id="@+id/btnCapture"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Camera" />
 
     <TextView
         android:id="@+id/responseTextView"
         android:layout_width="match_parent"
-        android:layout_height="241dp" />
+        android:layout_height="wrap_content"
+        android:text="" />
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:srcCompat="@android:drawable/ic_menu_gallery" />
 
 </LinearLayout>

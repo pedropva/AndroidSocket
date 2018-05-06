@@ -1,5 +1,11 @@
 package br.ufma.nca.ergonomics.socketjava;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.os.Environment;
+import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Editable;
@@ -8,8 +14,16 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.FloatBuffer;
 
 public class SendDataActivity extends AppCompatActivity {
@@ -39,48 +53,62 @@ public class SendDataActivity extends AppCompatActivity {
         setContentView(R.layout.activity_send_data);
 }
 */
+    ImageView image;
     TextView response;
-    EditText editTextAddress, editTextPort;
-    Button buttonConnect, buttonClear;
-    String ServerAddress = "192.168.200.94";
+    Button buttonCapture;
+    String ServerAddress = "192.168.0.16";
     String ServerPort = "30000";
-    FloatBuffer testCloud =null;
-    Integer nPoints=500000;
-    Integer buffSize=nPoints*4;
+    int TAKE_PHOTO_CODE = 0;
+    public static int count = 0;
+
+
     private static final String TAG = SendDataActivity.class.getSimpleName();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_send_data);
+        // Here, we are making a folder named picFolder to store
+        // pics taken by the camera using this application.
+        final String dir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES) + "/picFolder/";
+        Log.d("CameraDemo", dir);
+        File newdir = new File(dir);
+        newdir.mkdirs();
 
-        editTextAddress = (EditText) findViewById(R.id.addressEditText);
-        editTextPort = (EditText) findViewById(R.id.portEditText);
-        buttonConnect = (Button) findViewById(R.id.connectButton);
-        buttonClear = (Button) findViewById(R.id.clearButton);
+
+        buttonCapture = (Button) findViewById(R.id.btnCapture);
         response = (TextView) findViewById(R.id.responseTextView);
-        testCloud = FloatBuffer.allocate(buffSize);
-        fillTestCloud(testCloud);
+        image = (ImageView) findViewById(R.id.imageView);
 
-        buttonConnect.setOnClickListener(new View.OnClickListener() {
+
+        buttonCapture.setOnClickListener(new View.OnClickListener() {
 
             @Override
             public void onClick(View arg0) {
-                Log.i(TAG, "Primeiros 5 pontos:" +  printNFirstPoints(testCloud,5));
-                Log.i(TAG, "Ultimos 5 pontos:" +  print5LastPoints(testCloud,nPoints));
-                byte[] output = float2Byte(testCloud);
-                Client myClient = new Client(ServerAddress
-                        , Integer.parseInt(ServerPort)
-                        , response
-                        , output
-                        ,buffSize*4
-                        ,nPoints
-                        , print5LastPoints(testCloud,nPoints));
-                myClient.execute();
+                // Here, the counter will be incremented each time, and the
+                // picture taken by camera will be stored as 1.jpg,2.jpg
+                // and likewise.
+                count++;
+                String file = dir+count+".jpg";
+                File newfile = new File(file);
+                try {
+                    newfile.createNewFile();
+                }
+                catch (IOException e)
+                {
+                    Log.e("CameraDemo", e.getMessage());
+                }
+
+                Uri outputFileUri = Uri.fromFile(newfile);
+
+                Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                cameraIntent.putExtra(MediaStore.EXTRA_OUTPUT, outputFileUri);
+
+                startActivityForResult(cameraIntent, TAKE_PHOTO_CODE);
             }
         });
 
-
+        /*
         buttonClear.setOnClickListener(new View.OnClickListener() {
 
             @Override
@@ -88,7 +116,6 @@ public class SendDataActivity extends AppCompatActivity {
                 response.setText("");
             }
         });
-        /*
         response.addTextChangedListener(new TextWatcher() {
             @Override
             public void afterTextChanged(Editable s) {}
@@ -105,58 +132,53 @@ public class SendDataActivity extends AppCompatActivity {
         });
         */
     }
-
     @Override
     protected void onStart() {
         super.onStart();
         setVisible(true);
     }
-    private void fillTestCloud(FloatBuffer pointCloudBuffer) {
-        float aux=0.0f;
-        for (int i = 0; i < pointCloudBuffer.capacity(); i = i + 1) {
-            pointCloudBuffer.put(aux);
-            aux += 1.0f;
-        }
 
-    }
-    public static final byte[] float2Byte(FloatBuffer inData) {
-        int j = 0;
-        int length = inData.capacity();
-        int dataLength = 3000+inData.capacity()-inData.capacity()%3000;
-        byte[] outData = new byte[dataLength * 4];
-        for (int i = 0; i < length; i++) {
-            int d = Float.floatToIntBits(inData.get(i));
-            outData[j++] = (byte) (d >>> 24);
-            outData[j++] = (byte) (d >>> 16);
-            outData[j++] = (byte) (d >>> 8);
-            outData[j++] = (byte) (d >>> 0);
-        }
-        return outData;
-    }
-    private String print5LastPoints(FloatBuffer pointCloudBuffer, int numPoints) {
-        String pointsString = "";
-        if (numPoints != 0) {
-            int numFloats = 4 * numPoints;
-            for (int i = numFloats-20; i < numFloats; i++) {
-                pointsString +=" " + pointCloudBuffer.get(i);
-            }
-        }else{
-            pointsString="Não deu pra recuperar a nuvem de pontos :(";
-        }
-        return pointsString;
-    }
-    private String printNFirstPoints(FloatBuffer pointCloudBuffer, int numPoints) {
-        String pointsString = "";
-        if (numPoints != 0) {
-            int numFloats = 4 * numPoints;
-            for (int i = 0; i < numFloats; i = i + 1) {
-                pointsString +=" " + pointCloudBuffer.get(i);
-            }
-        }else{
-            pointsString="Não deu pra recuperar a nuvem de pontos :(";
-        }
-        return pointsString;
-    }
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
+        if (requestCode == TAKE_PHOTO_CODE && resultCode == RESULT_OK) {
+            byte [] imgbyte = new byte[0];
+            //Log.d("CameraDemo", data.toUri(0));
+            String filepath = "/storage/emulated/0/Pictures/picFolder/1.jpg";
+            image.setImageBitmap(BitmapFactory.decodeFile(filepath));
+            File imagefile = new File(filepath);
+            FileInputStream fis = null;
+            try {
+                fis = new FileInputStream(imagefile);
+            } catch (FileNotFoundException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            try {
+                imgbyte = new byte[fis.available()];
+                fis.read(imgbyte);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //Bitmap bm = BitmapFactory.decodeStream(fis);
+            //imgbyte = getBytesFromBitmap(bm);
+
+            Log.d("CameraDemo", "Pic saved");
+            Log.d("CameraDemo", "Tamanho do buffer enviado:" + Integer.toString(imgbyte.length));
+            byte[] output; //float2Byte(testCloud);
+            Client myClient = new Client(ServerAddress
+                    , Integer.parseInt(ServerPort)
+                    , response
+                    , imgbyte);
+            myClient.execute();
+        }
+    }
+    public byte[] getBytesFromBitmap(Bitmap bitmap) {
+        ByteArrayOutputStream stream = new ByteArrayOutputStream();
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 70, stream);
+        return stream.toByteArray();
+    }
 }
 
