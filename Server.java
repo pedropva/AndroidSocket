@@ -121,7 +121,10 @@ public class Server {
 					{
 						case 1: // Type A
 							bufferSize =  dIn.readInt();
-							if(bufferSize == 0)break;
+							if(bufferSize == 0){
+								System.out.println("Buffer recebido estava vazio!");				
+								break;
+							}
 							System.out.println("Tamanho do buffer a ser recebido: " + Integer.toString(bufferSize));
 							int bytesRead = 0;
 							byte[] byteBuffer = new byte[bufferSize];
