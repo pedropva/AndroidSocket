@@ -101,6 +101,8 @@ public class Server {
 			int i =0 ;
 			int j = 0;
 			int received=0;
+			Process process = null; //THIS IS THE PROCESS WE ARE GOING TO CALL AFTER RECEIVEING THE MESSAGE
+			String responseFile = "libResponse.txt";
 			try{
 				dIn = new DataInputStream(hostThreadSocket.getInputStream());
 			} catch (IOException e) {
@@ -163,7 +165,37 @@ public class Server {
 				}
 			}
 			//END OF RECEIVING MESSAGE
-			String msgReply = "YEEEEEEET";
+			String msgReply = "Error while running the skeleton lib!";
+			try{//run the libary
+				process = new ProcessBuilder(".\\testProgram.exe",responseFile,"YOYOYOYOYO ARGUMENT HERE").start();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				message += "Something wrong! " + e.toString() + "\n";
+			}
+			try{//waiting the lib to process the image
+			if(process != null)process.waitFor();	
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				message += "Something wrong! " + e.toString() + "\n";
+			}
+			try {
+				FileReader arq = new FileReader(".\\"+responseFile);
+				BufferedReader lerArq = new BufferedReader(arq);
+				String linha = lerArq.readLine(); // lê a primeira linha
+				// a variável "linha" recebe o valor "null" quando o processo
+				// de repetição atingir o final do arquivo texto
+				msgReply = linha;
+				while (linha != null) {
+					linha = lerArq.readLine(); // lê da segunda até a última linha
+					if(linha != null)msgReply += linha;
+				}
+				arq.close();
+			} catch (IOException e) {
+				System.err.printf("Error opening response file: %s.\n",
+					e.getMessage());
+			}
 
 			try {
 				outputStream = hostThreadSocket.getOutputStream();
