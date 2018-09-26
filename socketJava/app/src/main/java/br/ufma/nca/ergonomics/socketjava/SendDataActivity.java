@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
 import android.net.Uri;
 import android.os.Environment;
 import android.provider.MediaStore;
@@ -183,12 +184,16 @@ public class SendDataActivity extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == TAKE_PHOTO_CODE && resultCode == RESULT_OK) {
+        if (requestCode == TAKE_PHOTO_CODE && resultCode == RESULT_OK){
             byte[] imgbyte = new byte[0];
             File directory = getFilesDir();
             String filepath =  "/sdcard/picFolder/1.jpg";
             Log.d("CameraDemo", filepath);
-            image.setImageBitmap(BitmapFactory.decodeFile(filepath));
+            Matrix matrix = new Matrix();
+            matrix.postRotate(90);
+            Bitmap imageBmp = BitmapFactory.decodeFile(filepath);
+            Bitmap rotatedBitmap = Bitmap.createBitmap(imageBmp, 0, 0, imageBmp.getWidth(), imageBmp.getHeight(), matrix, true);
+            image.setImageBitmap(rotatedBitmap);
             File imagefile = new File(filepath);
             if (imagefile.exists()){
                 Log.d("CameraDemo", "File exists");

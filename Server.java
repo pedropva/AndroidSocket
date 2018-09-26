@@ -103,6 +103,8 @@ public class Server {
 			int received=0;
 			Process process = null; //THIS IS THE PROCESS WE ARE GOING TO CALL AFTER RECEIVEING THE MESSAGE
 			String responseFile = "libResponse.txt";
+			File imgDirectory = null;
+			String picturePath = null;
 			try{
 				dIn = new DataInputStream(hostThreadSocket.getInputStream());
 			} catch (IOException e) {
@@ -143,9 +145,21 @@ public class Server {
 								}
 							}
 							
-							FileOutputStream fos = new FileOutputStream(".\\picture.jpg");
+							// Create a directory; all non-existent ancestor directories are
+							// automatically created
+							System.out.println("Creating images folder...");
+							imgDirectory = (new File("./images"));
+							if (imgDirectory.mkdirs()) {
+							    System.out.println("Something wrong! Directory creation Failed! Does it already exist?");
+							}else{
+								System.out.println("Done!");
+							}
+							picturePath = ".\\images\\picture" + imgDirectory.list().length + ".jpg";
+							FileOutputStream fos = new FileOutputStream(picturePath);
+							System.out.println("Saving image to folder...");
 							fos.write(byteBuffer);
 							fos.close();
+
 							System.out.println("Pronto!");
 						break;
 						case 2: // Type B
@@ -165,7 +179,9 @@ public class Server {
 				}
 			}
 			//END OF RECEIVING MESSAGE
-			String msgReply = "Error while running the skeleton lib!";
+			
+			String msgReply = "só sucesso!";//"Error while running the processing program!";
+			/*AQUI EUCHAMO O PROCESSO
 			try{//run the libary
 				process = new ProcessBuilder(".\\testProgram.exe",responseFile,"YOYOYOYOYO ARGUMENT HERE").start();
 			} catch (IOException e) {
@@ -196,7 +212,7 @@ public class Server {
 				System.err.printf("Error opening response file: %s.\n",
 					e.getMessage());
 			}
-
+			*/
 			try {
 				outputStream = hostThreadSocket.getOutputStream();
 				PrintStream printStream = new PrintStream(outputStream);
